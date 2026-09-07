@@ -300,44 +300,6 @@ with st.expander("🎯 حاسبة الدرجة المطلوبة لتحقيق ه�
             st.success(f"✅ تحتاج تجيب بالمتوسط {needed_avg:.1f}% بالمواد الباقية عشان توصل لهدفك.")
 
 st.divider()
-
-# --- أداة إضافية: حاسبة درجة الامتحان النهائي ---
-with st.expander("📝 حاسبة درجة الامتحان النهائي"):
-    st.write("عندك درجة أعمال السنة، وتبي تعرف كم تحتاج بالامتحان النهائي؟")
-
-    exam_coursework_score = st.number_input(
-        "درجتك الحالية بأعمال السنة (من 100)",
-        min_value=0.0, max_value=100.0, value=0.0, step=0.5,
-        key="exam_coursework_score"
-    )
-    exam_coursework_weight = st.number_input(
-        "وزن أعمال السنة من المجموع (%)",
-        min_value=1, max_value=99, value=60, step=1,
-        key="exam_coursework_weight"
-    )
-    exam_target_grade = st.number_input(
-        "الدرجة النهائية اللي تبي توصلها بالمادة (%)",
-        min_value=0.0, max_value=100.0, value=90.0, step=0.5,
-        key="exam_target_grade"
-    )
-
-    exam_weight = 100 - exam_coursework_weight
-    st.caption(f"يعني وزن الامتحان النهائي = {exam_weight}%")
-
-    if st.button("احسب المطلوب بالامتحان 📝"):
-        # المعادلة: (درجة أعمال السنة × وزنها) + (درجة الامتحان × وزنه) = الهدف النهائي
-        coursework_contribution = exam_coursework_score * (exam_coursework_weight / 100)
-        needed_exam_score = (exam_target_grade - coursework_contribution) / (exam_weight / 100)
-
-        if needed_exam_score > 100:
-            st.error(f"⚠️ للأسف هدفك غير ممكن — تحتاج {needed_exam_score:.1f}% بالامتحان وهذا أعلى من 100%.")
-        elif needed_exam_score < 0:
-            st.success("🎉 مبروك! هدفك محقق فعلاً حتى لو جبت صفر بالامتحان!")
-        else:
-            st.success(f"✅ تحتاج تجيب {needed_exam_score:.1f}% بالامتحان النهائي عشان توصل لهدفك بالمادة.")
-
-st.divider()
-
 # --- أداة إضافية: مقارنة الفصول (تشتغل بس بنفس الجلسة، تنمسح لو سكرت المتصفح) ---
 if "semesters" not in st.session_state:
     st.session_state.semesters = []  # قائمة تخزن كل فصل: (اسم, معدل)
