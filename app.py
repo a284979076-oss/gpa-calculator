@@ -84,6 +84,36 @@ if stage == "ثانوي":
 elif is_university:
     st.caption("📚 للجامعيين: أدخل عدد الساعات المعتمدة لكل مادة ليُحسب معدلك التراكمي (GPA) بدقة.")
 
+# --- قوائم مواد شائعة (غير رسمية) لتسريع تعبئة النموذج ---
+subject_presets = {
+    "ابتدائي": ["اللغة العربية", "اللغة الإنجليزية", "الرياضيات", "العلوم",
+                "التربية الإسلامية", "الهوية والمواطنة", "تقنية المعلومات",
+                "التربية البدنية والصحية", "الفنون البصرية", "الفنون الموسيقية"],
+    "إعدادي": ["اللغة العربية", "اللغة الإنجليزية", "الرياضيات", "العلوم",
+               "التربية الإسلامية", "الدراسات الاجتماعية", "تقنية المعلومات",
+               "التربية البدنية", "الفنون"],
+    "ثانوي": ["اللغة العربية", "اللغة الإنجليزية", "الرياضيات", "الفيزياء",
+              "الكيمياء", "الأحياء", "التربية الإسلامية", "الدراسات الاجتماعية",
+              "تقنية المعلومات"],
+}
+
+if not is_university:
+    with st.expander("📚 اختر مواد شائعة لتعبئتها تلقائياً (اختياري)"):
+        st.caption("⚠️ هذي قائمة شائعة للمساعدة السريعة فقط، مو قائمة رسمية معتمدة من الوزارة — تقدر تعدل أو تحذف أي مادة بعدها.")
+        picked_subjects = st.multiselect(
+            "اختر المواد اللي تبيها",
+            subject_presets[stage],
+            key="picked_subjects"
+        )
+        if st.button("➕ املأ المواد المختارة تلقائياً"):
+            if picked_subjects:
+                st.session_state["num_subjects"] = len(picked_subjects)
+                for idx, subj_name in enumerate(picked_subjects, start=1):
+                    st.session_state[f"name_{idx}"] = subj_name
+                st.rerun()
+            else:
+                st.warning("اختر مادة وحدة على الأقل أول!")
+
 st.divider()
 
 # --- إدخال عدد المواد ---
@@ -92,7 +122,8 @@ num_subjects = st.number_input(
     min_value=1,
     max_value=30,
     value=5,
-    step=1
+    step=1,
+    key="num_subjects"
 )
 
 st.divider()
@@ -288,7 +319,6 @@ with st.expander("🎯 حاسبة الدرجة المطلوبة لتحقيق ه�
 
     if st.button("احسب المطلوب 🎯"):
         total_subjects_goal = goal_done_count + goal_remaining_count
-        # المعادلة: (الهدف × كل المواد) - (معدلك الحالي × المواد المنجزة) = مجموع الباقي المطلوب
         needed_total = (goal_target * total_subjects_goal) - (goal_current_avg * goal_done_count)
         needed_avg = needed_total / goal_remaining_count
 
@@ -300,6 +330,7 @@ with st.expander("🎯 حاسبة الدرجة المطلوبة لتحقيق ه�
             st.success(f"✅ تحتاج تجيب بالمتوسط {needed_avg:.1f}% بالمواد الباقية عشان توصل لهدفك.")
 
 st.divider()
+
 # --- أداة إضافية: مقارنة الفصول (تشتغل بس بنفس الجلسة، تنمسح لو سكرت المتصفح) ---
 if "semesters" not in st.session_state:
     st.session_state.semesters = []  # قائمة تخزن كل فصل: (اسم, معدل)
