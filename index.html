@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>حاسبة المعدل السنوي</title>
+<meta name="description" content="حاسبة المعدل السنوي المجانية للطلاب: احسب معدلك للابتدائي والإعدادي والثانوي والجامعي واطبع تقريرك.">
+<style>
+body{font-family:Arial,sans-serif;background:#0e1117;color:#fafafa;margin:0;padding:20px;}
+.box{max-width:700px;margin:auto;}
+input,select{background:#262730;color:#fff;border:1px solid #444;border-radius:8px;padding:8px;font-size:16px;}
+label{display:block;margin:12px 0 4px;}
+.row{display:flex;gap:8px;margin:8px 0;}
+.row input{flex:1;min-width:0;}
+.row input.name{flex:2;}
+button{background:#00C2A8;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:16px;cursor:pointer;margin-top:12px;}
+#result{display:none;margin-top:20px;padding:16px;border:1px solid #00C2A8;border-radius:12px;}
+.big{font-size:28px;color:#00C2A8;margin:4px 0;}
+table{width:100%;border-collapse:collapse;margin:10px 0;}
+td,th{border:1px solid #444;padding:6px;}
+small{color:#999;}
+@media print{.noprint{display:none;} body{background:#fff;color:#000;} #result{border:none;}}
+</style>
+</head>
+<body>
+<div class="box">
+  <h1>🎓 حاسبة المعدل السنوي</h1>
+  <div class="noprint">
+    <label>اسم الطالب</label>
+    <input id="student" type="text">
+    <label>المرحلة الدراسية</label>
+    <select id="stage">
+      <option>ابتدائي</option><option>إعدادي</option><option>ثانوي</option><option>جامعي</option>
+    </select>
+    <label>عدد المواد</label>
+    <input id="count" type="number" min="1" max="30" value="5">
+    <div id="subjects"></div>
+    <button onclick="calculate()">احسب المعدل ✅</button>
+  </div>
+  <div id="result"></div>
+  <p><small>فالك النجاح 🌟 — من: أبو محمد</small></p>
+</div>
+
+<script>
+const msgs = {
+  A: ["ما شاء الله! مستوى رهيب 🌟", "أداء ممتاز، فخورين فيك 🏆"],
+  B: ["شغل جميل، خطوة وتوصل للممتاز 👍", "كمّل بنفس الجهد 💫"],
+  C: ["مستوى مقبول، شوية جهد وتتحسن 📘", "ركّز على المواد الصعبة 💡"],
+  D: ["الفصل الجاي فرصتك 💪", "غيّر طريقة مذاكرتك وشوف الفرق 📚"]
+};
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+const isUni = () => document.getElementById("stage").value === "جامعي";
+
+function buildRows() {
+  const n = Math.min(30, Math.max(1, parseInt(document.getElementById("count").value) || 1));
+  const box = document.getElementById("subjects");
+  const old = [...box.querySelectorAll(".row")].map(r => [...r.querySelectorAll("input")].map(i => i.value));
+  let html = "";
+  for (let i = 0; i < n; i++) {
+    const v = old[i] || [];
+    html += `<div class="row">
+      <input class="name" placeholder="اسم المادة ${i + 1}" value="${esc(v[0] || "")}">
+      <input class="mark" type="number" min="0" max="100" step="0.5" placeholder="الدرجة" value="${v[1] || ""}">
+      ${isUni() ? `<input class="credit" type="number" min="1" max="6" title="الساعات" value="${v[2] || 3}">` : ""}
+    </div>`;
+  }
+  box.innerHTML = html;
+}
+
+function calculate() {
+  const uni = isUni();
+  const rows = [...document.querySelectorAll("#subjects .row")];
+  let totalW = 0, totalC = 0, rowsHtml = "";
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    const subj = r.querySelector(".name").value || ("مادة " + (i + 1));
+    const mark = parseFloat(r.querySelector(".mark").value);
+    const credit = uni ? (parseInt(r.querySelector(".credit").value) || 1) : 1;
+    if (isNaN(mark) || mark < 0) { alert("أدخل درجة صحيحة للمادة: " + subj); return; }
+    if (mark > 100) { alert("⚠️ درجة " + subj + " أكبر من 100! كم عطيت الأستاذ عشان تجيب فوق الـ100؟ 😂"); return; }
+    totalW += mark * credit;
+    totalC += credit;
+    rowsHtml += `<tr><td>${esc(subj)}</td><td>${mark}</td>${uni ? `<td>${credit}</td>` : ""}</tr>`;
+  }
+  const avg = totalW / totalC;
+  let g, t;
+  if (avg >= 90) { g = "A"; t = "ممتاز (A) 🌟"; }
+  else if (avg >= 80) { g = "B"; t = "جيد جداً (B) 👍"; }
+  else if (avg >= 70) { g = "C"; t = "جيد (C) 📘"; }
+  else { g = "D"; t = "تحتاج مزيداً من الاجتهاد 💪"; }
+
+  const studentName = esc(document.getElementById("student").value) || "—";
+  const res = document.getElementById("result");
+  res.style.display = "block";
+  res.innerHTML = `
+    <h2>📊 النتيجة</h2>
+    <p><b>الطالب:</b> ${studentName} | <b>المرحلة:</b> ${document.getElementById("stage").value} | ${new Date().toISOString().slice(0, 10)}</p>
+    <table><tr><th>المادة</th><th>الدرجة</th>${uni ? "<th>الساعات</th>" : ""}</tr>${rowsHtml}</table>
+    <p>${uni ? "المعدل المرجّح (من 100)" : "المعدل النهائي"}</p>
+    <p class="big">${avg.toFixed(2)}%</p>
+    <p>التقدير: <b>${t}</b></p>
+    <p>${pick(msgs[g])}</p>
+    <p><small>تقرير غير رسمي — لا يغني عن الشهادة الرسمية. لطلاب الثانوية والدبلوم راجع البوابة التعليمية الرسمية لحساب النسبة الدقيقة.</small></p>
+    <button class="noprint" onclick="window.print()">🖨️ اطبع / احفظ كـ PDF</button>`;
+}
+
+document.getElementById("count").oninput = buildRows;
+document.getElementById("stage").onchange = buildRows;
+buildRows();
+</script>
+</body>
+</html>
